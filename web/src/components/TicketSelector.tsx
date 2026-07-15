@@ -4,180 +4,171 @@ import type { Ticket } from "../../../../packages/shared/src/types.ts";
 interface Props {
   tickets: Ticket[];
   eventSlug: string;
-  ctaLabel?: string;
-  ctaHref?: string;
+  /** Ticket IDs that route to the seat/spot picker instead of checkout */
+  spotTicketIds?: number[];
 }
 
 function formatKes(amount: number) {
-  return `KES ${amount.toLocaleString("en-KE")}`;
+  return `KES ${Number(amount).toLocaleString()}`;
 }
 
 export default function TicketSelector({
   tickets,
   eventSlug,
-  ctaLabel = "BUY YOUR SPOT",
-  ctaHref,
+  spotTicketIds = [],
 }: Props) {
+  const spotSet = useMemo(() => new Set(spotTicketIds), [spotTicketIds]);
   const [selectedId, setSelectedId] = useState<number | null>(
-    () => tickets.find((t) => t.available && t.highlighted)?.id ?? tickets.find((t) => t.available)?.id ?? null,
+    () =>
+      tickets.find((t) => t.available && t.highlighted)?.id ??
+      tickets.find((t) => t.available)?.id ??
+      null,
   );
-  const [qty, setQty] = useState(1);
-  const [query, setQuery] = useState("");
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return tickets;
-    return tickets.filter(
-      (t) => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q),
-    );
-  }, [tickets, query]);
-
+  const allSoldOut = tickets.length > 0 && tickets.every((t) => !t.available);
   const selected = tickets.find((t) => t.id === selectedId);
-  const href =
-    ctaHref ??
-    (selected
-      ? `/event/${eventSlug}/spots?ticket=${selected.id}&qty=${qty}`
-      : `/event/${eventSlug}/spots`);
+  const needsSpot = selectedId != null && spotSet.has(selectedId);
+
+  const ctaHref =
+    selected?.available && selectedId
+      ? needsSpot
+        ? `/event/${eventSlug}/spots?plan=${selectedId}`
+        : `/checkout/${eventSlug}?ticket=${selectedId}`
+      : undefined;
+
+  const ctaLabel = allSoldOut
+    ? "Sold Out"
+    : !selected
+      ? "Select a Ticket"
+      : needsSpot
+        ? "Pick Your Spot"
+        : "Proceed to Checkout";
 
   return (
-    <aside className="flex h-full max-h-[calc(100vh-5rem)] flex-col overflow-hidden rounded-xl border border-wwp-border bg-wwp-card lg:sticky lg:top-20">
-      <div className="border-b border-wwp-border p-4">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold text-white">
-            Select Tickets
-          </h2>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9a9a" strokeWidth="2" aria-hidden>
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" />
+    <div className="sticky top-24 space-y-4">
+      <div className="rounded-2xl border border-border bg-card p-6">
+        <h2 className="mb-4 flex items-center gap-2 font-display text-xl font-bold text-foreground">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-primary"
+            aria-hidden
+          >
+            <path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V9z" />
+            <path d="M13 5v2M13 17v2" />
           </svg>
-        </div>
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search tickets…"
-          className="mt-3 w-full rounded-lg border border-wwp-border bg-wwp-surface px-3 py-2 text-sm text-white outline-none placeholder:text-wwp-muted focus:border-wwp-red/60"
-        />
-      </div>
+          Select Tickets
+        </h2>
 
-      <div className="flex-1 space-y-3 overflow-y-auto p-3">
-        {filtered.map((ticket) => {
-          const isSelected = selectedId === ticket.id;
-          const soldOut = !ticket.available;
-          return (
-            <button
-              key={ticket.id}
-              type="button"
-              disabled={soldOut}
-              onClick={() => {
-                setSelectedId(ticket.id);
-                setQty(1);
-              }}
-              className={[
-                "w-full rounded-xl border p-3.5 text-left transition",
-                soldOut
-                  ? "cursor-not-allowed border-wwp-border/60 bg-wwp-surface/40 opacity-55"
-                  : isSelected || ticket.highlighted
-                    ? "border-wwp-red bg-wwp-red/5 shadow-[0_0_0_1px_rgba(227,28,37,0.25)]"
-                    : "border-wwp-border bg-wwp-surface hover:border-white/20",
-              ].join(" ")}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <h3 className="text-sm font-bold tracking-wide text-white uppercase">{ticket.name}</h3>
-                    {ticket.badge === "few_left" && ticket.available && (
-                      <span className="rounded-full bg-wwp-gold/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-wwp-gold uppercase">
-                        Few Left
-                      </span>
-                    )}
-                    {(ticket.badge === "popular" || ticket.highlighted) && ticket.available && (
-                      <span className="rounded-full bg-wwp-red/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-wwp-red uppercase">
-                        Popular
-                      </span>
-                    )}
-                    {ticket.highlighted && ticket.available && ticket.badge !== "few_left" && (
-                      <span className="rounded-full bg-wwp-gold/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-wwp-gold uppercase">
-                        Few Left
-                      </span>
-                    )}
-                  </div>
-                  {ticket.description ? (
-                    <p className="mt-2 whitespace-pre-line text-xs leading-relaxed text-wwp-muted">
-                      {ticket.description}
-                    </p>
-                  ) : null}
-                </div>
-                <div className="shrink-0 text-right">
-                  {soldOut ? (
-                    <span className="rounded bg-wwp-red px-2 py-1 text-[10px] font-bold tracking-wide text-white uppercase">
-                      Sold Out
-                    </span>
-                  ) : (
-                    <p className="text-base font-bold text-wwp-red">{formatKes(ticket.price_kes)}</p>
-                  )}
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="border-t border-wwp-border p-4">
-        {selected?.available && (
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs text-wwp-muted">Quantity</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-wwp-border text-white hover:bg-white/5"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                aria-label="Decrease quantity"
-              >
-                −
-              </button>
-              <span className="w-6 text-center text-sm font-semibold">{qty}</span>
-              <button
-                type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-wwp-border text-white hover:bg-white/5"
-                onClick={() => setQty((q) => Math.min(10, q + 1))}
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
+        {allSoldOut && (
+          <div className="mb-4 rounded-xl border border-border bg-muted/20 p-4">
+            <div className="text-sm font-bold text-foreground">SOLD OUT</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              All ticket categories for this event have been sold out.
             </div>
           </div>
         )}
+
+        {tickets.length ? (
+          <div className="space-y-3">
+            {tickets.map((ticket) => {
+              const soldOut = !ticket.available || allSoldOut;
+              const isSelected = selectedId === ticket.id;
+              return (
+                <button
+                  key={ticket.id}
+                  type="button"
+                  disabled={soldOut}
+                  onClick={() => ticket.available && setSelectedId(ticket.id)}
+                  className={[
+                    "w-full rounded-xl border-2 p-4 text-left transition-all",
+                    soldOut
+                      ? "cursor-not-allowed border-border bg-muted/20 opacity-50"
+                      : isSelected
+                        ? "border-primary bg-primary/10"
+                        : ticket.highlighted
+                          ? "border-primary/50 bg-primary/5 hover:border-primary"
+                          : "border-border hover:border-primary/50",
+                  ].join(" ")}
+                >
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <span className="font-bold text-foreground">{ticket.name}</span>
+                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+                      {soldOut && (
+                        <span className="rounded-full bg-accent px-2 py-1 text-xs font-bold text-accent-foreground">
+                          SOLD OUT
+                        </span>
+                      )}
+                      {ticket.highlighted && ticket.available && (
+                        <span className="rounded-full bg-primary px-2 py-1 text-xs font-bold text-primary-foreground">
+                          POPULAR
+                        </span>
+                      )}
+                      {spotSet.has(ticket.id) && ticket.available && (
+                        <span className="flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/15 px-2 py-1 text-xs font-bold text-amber-500">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                            <path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.8 5.6 21.2 8 14 2 9.2h7.6L12 2z" />
+                          </svg>
+                          PICK YOUR SPOT
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {ticket.description ? (
+                    <div className="mb-2 whitespace-pre-line text-sm text-muted-foreground">
+                      {ticket.description}
+                    </div>
+                  ) : null}
+                  <div className="text-lg font-bold text-primary">{formatKes(ticket.price_kes)}</div>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Tickets for this event are not available yet.</p>
+        )}
+
         <a
-          href={selected?.available ? href : undefined}
-          aria-disabled={!selected?.available}
+          href={ctaHref}
+          aria-disabled={!ctaHref}
           className={[
-            "flex w-full items-center justify-center rounded-lg px-4 py-3.5 text-sm font-bold tracking-wide text-white uppercase transition",
-            selected?.available
-              ? "bg-wwp-red hover:bg-wwp-red-dark"
-              : "pointer-events-none cursor-not-allowed bg-wwp-border text-white/40",
+            "mt-6 flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-bold text-primary-foreground transition",
+            ctaHref
+              ? "bg-primary hover:bg-primary/90"
+              : "pointer-events-none cursor-not-allowed bg-muted text-muted-foreground",
           ].join(" ")}
         >
           {ctaLabel}
         </a>
-        <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-wwp-muted">
-          <a href="/terms" className="hover:text-white">
-            Terms
-          </a>
-          <a href="/support" className="hover:text-white">
-            Support
-          </a>
-          <a href="/support" className="hover:text-white">
-            Help
-          </a>
-          <a href="/privacy" className="hover:text-white">
-            Privacy
-          </a>
-        </div>
-        <p className="mt-3 text-center text-[10px] text-white/30">
-          Protected by military-grade encryption & security.
+
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Secure payment • Instant delivery
         </p>
       </div>
-    </aside>
+
+      <div className="rounded-xl border border-border bg-card/50 p-4">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-primary"
+              aria-hidden
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <span>Protected by military-grade encryption & security.</span>
+        </div>
+      </div>
+    </div>
   );
 }

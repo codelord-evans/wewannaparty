@@ -38,7 +38,7 @@ export default function CheckoutForm({
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const t = Number(params.get("ticket") ?? "");
+    const t = Number(params.get("ticket") ?? params.get("plan") ?? "");
     const q = Number(params.get("qty") ?? "");
     if (t && available.some((ticket) => ticket.id === t)) setTicketId(t);
     if (q >= 1 && q <= 10) setQty(q);

@@ -1,7 +1,7 @@
 export const API_URL = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
 
 export function formatKes(amount: number) {
-  return `KES ${amount.toLocaleString("en-KE")}`;
+  return `KES ${Number(amount).toLocaleString()}`;
 }
 
 export function formatEventDate(dateStr: string) {
@@ -19,7 +19,8 @@ export function formatTimeRange(start: string, end: string) {
     const [h, m] = t.split(":").map(Number);
     const ampm = h >= 12 ? "PM" : "AM";
     const hour = h % 12 || 12;
-    return `${hour}:${String(m).padStart(2, "0")} ${ampm}`;
+    const mins = String(m).padStart(2, "0");
+    return `${hour}:${mins} ${ampm}`;
   };
   return `${fmt(start)} - ${fmt(end)} EAT+3`;
 }

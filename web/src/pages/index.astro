@@ -11,51 +11,51 @@ const featured = featuredEvents[1] ?? featuredEvents[0];
   description="Africa's ticketing platform built for entertainment culture. Discover events, buy tickets, and fill the dancefloor."
   image={featured?.poster}
 >
-  <section class="relative overflow-hidden border-b border-wwp-border">
+  <section class="relative overflow-hidden border-b border-border pt-20">
     <img
       src={featured.poster}
       alt=""
-      class="absolute inset-0 h-full w-full object-cover opacity-30 blur-sm"
+      class="absolute inset-0 h-full w-full object-cover opacity-30"
       aria-hidden="true"
     />
-    <div class="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/40"></div>
-    <div class="relative mx-auto grid max-w-[1400px] items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:px-6 lg:py-24">
+    <div class="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/50"></div>
+    <div class="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:py-24">
       <div>
-        <p class="font-display text-sm font-semibold tracking-[0.2em] text-wwp-red uppercase">WeWannaParty</p>
-        <h1 class="mt-3 font-display text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-          We<span class="text-wwp-red">*</span>R Afro
+        <p class="font-display text-sm font-semibold tracking-[0.2em] text-primary uppercase">WeWannaParty</p>
+        <h1 class="mt-3 font-display text-4xl font-bold tracking-tight text-balance text-foreground sm:text-5xl lg:text-6xl">
+          We<span class="text-primary">*</span>R Afro
         </h1>
-        <p class="mt-4 max-w-lg text-base text-white/70 sm:text-lg">
+        <p class="mt-4 max-w-lg text-base text-muted-foreground sm:text-lg">
           Afrohouse. 3-Step. Nonstop energy at Uhuru Gardens. Get your tickets before they sell out.
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
           <a
             href="/event/wer-afro"
-            class="rounded-lg bg-wwp-red px-6 py-3 text-sm font-bold tracking-wide text-white uppercase hover:bg-wwp-red-dark"
+            class="rounded-lg bg-primary px-6 py-3 text-sm font-bold tracking-wide text-primary-foreground uppercase hover:bg-primary/90"
           >
             Get tickets
           </a>
           <a
             href="/events"
-            class="rounded-lg border border-white/20 px-6 py-3 text-sm font-bold tracking-wide text-white uppercase hover:bg-white/5"
+            class="rounded-lg border border-border px-6 py-3 text-sm font-bold tracking-wide text-foreground uppercase hover:bg-muted/40"
           >
             Browse events
           </a>
         </div>
       </div>
-      <a href="/event/wer-afro" class="justify-self-center overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
+      <a href="/event/wer-afro" class="justify-self-center overflow-hidden rounded-2xl border border-border shadow-2xl">
         <img src={featured.poster} alt={featured.name} class="max-h-[420px] w-auto object-cover" />
       </a>
     </div>
   </section>
 
-  <section class="mx-auto max-w-[1400px] px-4 py-14 lg:px-6">
+  <section class="mx-auto max-w-6xl px-4 py-14">
     <div class="flex items-end justify-between gap-4">
       <div>
-        <h2 class="font-display text-2xl font-bold sm:text-3xl">Featured events</h2>
-        <p class="mt-2 text-sm text-wwp-muted">This week&apos;s hottest tickets across Kenya.</p>
+        <h2 class="font-display text-2xl font-bold text-foreground sm:text-3xl">Featured events</h2>
+        <p class="mt-2 text-sm text-muted-foreground">This week&apos;s hottest tickets across Kenya.</p>
       </div>
-      <a href="/events" class="text-sm font-semibold text-wwp-red hover:underline">View all</a>
+      <a href="/events" class="text-sm font-semibold text-primary hover:underline">View all</a>
     </div>
     <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {

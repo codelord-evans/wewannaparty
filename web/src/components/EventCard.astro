@@ -23,7 +23,7 @@ const priceLabel =
 
 <a
   href={`/event/${slug}`}
-  class="group overflow-hidden rounded-xl border border-wwp-border bg-wwp-card transition hover:border-wwp-red/50"
+  class="group overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50"
 >
   <div class="relative aspect-[4/5] overflow-hidden">
     <img
@@ -34,16 +34,16 @@ const priceLabel =
     />
     {
       badge && (
-        <span class="absolute top-3 left-3 rounded-full bg-wwp-red px-2.5 py-1 text-[10px] font-bold tracking-wide text-white uppercase">
+        <span class="absolute top-3 left-3 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold tracking-wide text-primary-foreground uppercase">
           {badge.replace("_", " ")}
         </span>
       )
     }
   </div>
   <div class="p-4">
-    <h3 class="font-display text-lg font-semibold text-white">{name}</h3>
-    <p class="mt-1 text-sm text-wwp-muted">{formatEventDate(date)}</p>
-    <p class="mt-1 text-sm text-white/70">{venue} · {location}</p>
-    <p class="mt-3 text-sm font-semibold text-wwp-red">{priceLabel}</p>
+    <h3 class="font-display text-lg font-semibold text-foreground">{name}</h3>
+    <p class="mt-1 text-sm text-muted-foreground">{formatEventDate(date)}</p>
+    <p class="mt-1 text-sm text-muted-foreground">{venue} · {location}</p>
+    <p class="mt-3 text-sm font-semibold text-primary">{priceLabel}</p>
   </div>
 </a>

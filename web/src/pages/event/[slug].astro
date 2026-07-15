@@ -18,6 +18,11 @@ const title = `${event.name} | WeWannaParty`;
 const description = event.description;
 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${event.venue_name}, ${event.location}`)}`;
 
+/** Packages that use the floor/spot picker (premium table/suite tiers) */
+const spotTicketIds = event.tickets
+  .filter((t) => /package|suite|lounge|royale|experience/i.test(t.name))
+  .map((t) => t.id);
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "MusicEvent",
@@ -55,39 +60,35 @@ const jsonLd = {
 ---
 
 <Layout title={title} description={description} image={event.poster} jsonLd={jsonLd}>
-  {/* Hero */}
-  <section class="relative h-[220px] overflow-hidden sm:h-[280px] lg:h-[320px]">
-    <img
-      src={event.poster}
-      alt=""
-      class="absolute inset-0 h-full w-full scale-110 object-cover blur-md brightness-[0.45]"
-      aria-hidden="true"
-    />
-    <div class="absolute inset-0 bg-gradient-to-t from-wwp-black via-black/40 to-black/20"></div>
-    <img
-      src={event.poster}
-      alt={event.name}
-      class="absolute inset-0 m-auto h-full w-auto max-w-[90%] object-contain drop-shadow-2xl sm:max-w-[70%] lg:max-w-[520px]"
-    />
+  <div class="min-h-screen bg-background pt-20">
+    {/* Hero — matched: h-[40vh] md:h-[50vh], poster opacity-70, gradient overlays */}
+    <section class="relative h-[40vh] overflow-hidden md:h-[50vh]">
+      <div class="absolute inset-0 bg-gradient-to-br from-primary/40 via-primary/20 to-background"></div>
+      <img
+        src={event.poster}
+        alt={event.name}
+        class="absolute inset-0 h-full w-full object-cover opacity-70"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>
 
-    <div class="absolute inset-x-0 top-0 z-10 mx-auto flex max-w-[1400px] items-center justify-between px-4 pt-4 lg:px-6">
       <a
         href="/events"
-        class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-medium text-white backdrop-blur hover:bg-black/60"
+        class="absolute top-6 left-6 z-10 flex items-center gap-2 rounded-full bg-background/20 px-4 py-2 text-foreground/80 backdrop-blur-sm transition-colors hover:text-foreground"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M15 18l-6-6 6-6"></path>
         </svg>
-        Back to Events
+        <span class="text-sm font-medium">Back to Events</span>
       </a>
-      <div class="flex items-center gap-2">
+
+      <div class="absolute top-6 right-6 z-10 flex items-center gap-2">
         <button
           type="button"
-          class="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white backdrop-blur hover:bg-black/60"
-          aria-label="Share"
           id="share-btn"
+          aria-label="Share"
+          class="rounded-full bg-background/20 p-3 text-foreground backdrop-blur-sm transition-all duration-300 hover:bg-primary/80 hover:text-primary-foreground"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="18" cy="5" r="3"></circle>
             <circle cx="6" cy="12" r="3"></circle>
             <circle cx="18" cy="19" r="3"></circle>
@@ -96,125 +97,141 @@ const jsonLd = {
         </button>
         <button
           type="button"
-          class="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white backdrop-blur hover:bg-black/60"
-          aria-label="Favorite"
           id="fav-btn"
+          aria-label="Save"
+          class="rounded-full bg-background/20 p-3 text-foreground backdrop-blur-sm transition-colors hover:bg-background/40"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path
               d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"
             ></path>
           </svg>
         </button>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <div class="mx-auto grid max-w-[1400px] gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-6 lg:py-8 xl:grid-cols-[minmax(0,1fr)_380px]">
-    <div class="min-w-0 space-y-5">
-      {/* Event header */}
-      <section class="card-surface p-5 sm:p-6">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="rounded-full bg-wwp-red px-2.5 py-1 text-[10px] font-bold tracking-wide text-white uppercase">
-            {event.organizer ?? "Admission"}
-          </span>
-          <span class="rounded-full border border-wwp-border bg-wwp-surface px-2.5 py-1 text-[10px] font-semibold tracking-wide text-white/70 capitalize">
-            {event.category}
-          </span>
-        </div>
-        <h1 class="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-          {event.name}
-        </h1>
-        <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/75">
-          <span class="inline-flex items-center gap-1.5">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-wwp-red">
-              <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-              <path d="M16 2v4M8 2v4M3 10h18"></path>
-            </svg>
-            {formatEventDate(event.date)}
-          </span>
-          <span class="inline-flex items-center gap-1.5">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-wwp-red">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M12 7v5l3 2"></path>
-            </svg>
-            {formatTimeRange(event.start_time, event.end_time)}
-          </span>
-          <span class="inline-flex items-center gap-1.5">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-wwp-red">
-              <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"></path>
-              <circle cx="12" cy="10" r="2.5"></circle>
-            </svg>
-            {event.venue_name}
-          </span>
-          <span class="inline-flex items-center rounded border border-wwp-red/40 bg-wwp-red/10 px-2 py-0.5 text-xs font-bold text-wwp-red">
-            {event.age_restriction}
-          </span>
-        </div>
-      </section>
+    {/* Content overlaps hero — matched: max-w-6xl -mt-32 */}
+    <div class="relative z-10 mx-auto -mt-32 max-w-6xl px-4 pb-16">
+      <div class="grid gap-8 lg:grid-cols-3">
+        <div class="space-y-6 lg:col-span-2">
+          {/* Event header card */}
+          <section class="rounded-2xl border border-border bg-card p-6 md:p-8">
+            <div class="mb-4 flex flex-wrap items-center gap-2">
+              <span class="inline-block rounded-full bg-primary/20 px-3 py-1 text-sm font-medium text-primary">
+                {event.organizer ?? "WeAreAfro"}
+              </span>
+              <span class="inline-block rounded-full bg-muted/40 px-3 py-1 text-sm font-medium text-foreground capitalize">
+                {event.category}
+              </span>
+              <span class="inline-block rounded-full bg-accent px-3 py-1 text-sm font-bold text-accent-foreground">
+                {event.age_restriction}
+              </span>
+            </div>
 
-      <section class="card-surface p-5 sm:p-6">
-        <h2 class="font-display text-xl font-semibold">About This Event</h2>
-        <p class="mt-3 text-sm leading-relaxed text-white/75 sm:text-[15px]">{event.description}</p>
-      </section>
+            <h1 class="mb-4 font-display text-3xl font-bold text-foreground md:text-4xl">
+              {event.name}
+            </h1>
 
-      <section class="card-surface p-5 sm:p-6">
-        <h2 class="font-display text-xl font-semibold">Event Information</h2>
-        <div class="mt-4 grid gap-3 sm:grid-cols-2">
-          <EventInfoItem label="Doors Open" value={formatDoors(event.doors_open)} />
-          <EventInfoItem label="Dress code" value={event.dress_code} />
-          <EventInfoItem label="Age restriction" value={event.age_restriction} />
-          <EventInfoItem label="Parking" value={event.parking ?? "Available (Limited)"} />
-        </div>
-      </section>
+            <div class="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+              <div class="flex items-center gap-2 text-muted-foreground">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-primary">
+                  <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                  <path d="M16 2v4M8 2v4M3 10h18"></path>
+                </svg>
+                <span>{formatEventDate(event.date)}</span>
+              </div>
+              <div class="flex items-center gap-2 text-muted-foreground">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-primary">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7v5l3 2"></path>
+                </svg>
+                <span>{formatTimeRange(event.start_time, event.end_time)}</span>
+              </div>
+              <div class="flex items-center gap-2 text-muted-foreground">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-primary">
+                  <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"></path>
+                  <circle cx="12" cy="10" r="2.5"></circle>
+                </svg>
+                <span>{event.venue_name}</span>
+              </div>
+              <div class="flex items-center gap-2 text-muted-foreground">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-primary">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <span>{event.age_restriction}</span>
+              </div>
+            </div>
+          </section>
 
-      <section class="card-surface p-5 sm:p-6">
-        <h2 class="flex items-center gap-2 font-display text-xl font-semibold">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="text-wwp-red">
-            <path d="M9 18V5l12-2v13"></path>
-            <circle cx="6" cy="18" r="3"></circle>
-            <circle cx="18" cy="16" r="3"></circle>
-          </svg>
-          Featured Artists
-        </h2>
-        <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <section class="rounded-2xl border border-border bg-card p-6 md:p-8">
+            <h2 class="mb-4 font-display text-xl font-bold text-foreground">About This Event</h2>
+            <p class="leading-relaxed text-muted-foreground">{event.description}</p>
+          </section>
+
+          <section class="rounded-2xl border border-border bg-card p-6 md:p-8">
+            <h2 class="mb-4 font-display text-xl font-bold text-foreground">Event Information</h2>
+            <div class="grid gap-4 md:grid-cols-2">
+              <EventInfoItem label="Doors Open" value={formatDoors(event.doors_open)} />
+              <EventInfoItem label="Dress Code" value={event.dress_code} />
+              <EventInfoItem label="Age Restriction" value={event.age_restriction} />
+              <EventInfoItem label="Refund Policy" value={event.refund_policy} />
+            </div>
+          </section>
+
           {
-            event.artists.map((artist) => (
-              <ArtistCard
-                name={artist.name}
-                genre={artist.genre}
-                photoUrl={artist.photo_url}
-                instagramUrl={artist.instagram_url}
-              />
-            ))
+            event.artists.length > 0 && (
+              <section class="rounded-2xl border border-border bg-card p-6 md:p-8">
+                <h2 class="mb-6 flex items-center gap-2 font-display text-xl font-bold text-foreground">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-primary" aria-hidden>
+                    <path d="M9 18V5l12-2v13"></path>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <circle cx="18" cy="16" r="3"></circle>
+                  </svg>
+                  Featured Artists
+                </h2>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                  {event.artists.map((artist) => (
+                    <ArtistCard
+                      name={artist.name}
+                      genre={artist.genre}
+                      photoUrl={artist.photo_url}
+                      instagramUrl={artist.instagram_url}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
           }
-        </div>
-      </section>
 
-      <section class="card-surface p-5 sm:p-6">
-        <h2 class="font-display text-xl font-semibold">Venue</h2>
-        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <p class="inline-flex items-center gap-2 text-sm text-white/80">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-wwp-red">
-              <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"></path>
-              <circle cx="12" cy="10" r="2.5"></circle>
-            </svg>
-            {event.venue_name}, {event.location}
-          </p>
-          <a href={mapsUrl} target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-wwp-red hover:underline">
-            Get Directions
-          </a>
+          <section class="rounded-2xl border border-border bg-card p-6 md:p-8">
+            <h2 class="mb-4 font-display text-xl font-bold text-foreground">Venue</h2>
+            <div class="flex items-start gap-3">
+              <div class="rounded-xl bg-primary/20 p-3">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary">
+                  <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"></path>
+                  <circle cx="12" cy="10" r="2.5"></circle>
+                </svg>
+              </div>
+              <div>
+                <p class="text-lg font-bold text-foreground">{event.venue_name}</p>
+                <p class="text-muted-foreground">{event.location}</p>
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mt-2 inline-block text-sm font-semibold text-primary hover:underline"
+                >
+                  Get Directions
+                </a>
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
-    </div>
 
-    <div class="lg:min-h-[640px]">
-      <TicketSelector
-        client:load
-        tickets={event.tickets}
-        eventSlug={event.slug}
-        ctaLabel="BUY YOUR SPOT"
-      />
+        <div class="lg:col-span-1">
+          <TicketSelector client:load tickets={event.tickets} eventSlug={event.slug} spotTicketIds={spotTicketIds} />
+        </div>
+      </div>
     </div>
   </div>
 </Layout>
@@ -232,6 +249,6 @@ const jsonLd = {
 
   document.getElementById("fav-btn")?.addEventListener("click", (e) => {
     const btn = e.currentTarget as HTMLButtonElement;
-    btn.classList.toggle("text-wwp-red");
+    btn.classList.toggle("text-primary");
   });
 </script>

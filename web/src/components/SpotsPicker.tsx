@@ -19,7 +19,7 @@ export default function SpotsPicker({ eventSlug, ticketId: ticketIdProp, qty: qt
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const t = Number(params.get("ticket") ?? "");
+    const t = Number(params.get("ticket") ?? params.get("plan") ?? "");
     const q = Number(params.get("qty") ?? "");
     if (t) setTicketId(t);
     if (q >= 1 && q <= 10) setQty(q);

@@ -7,7 +7,7 @@ interface Props {
 const { label, value } = Astro.props;
 ---
 
-<div class="rounded-lg border border-wwp-border bg-wwp-surface/80 p-4">
-  <p class="text-xs font-medium tracking-wide text-wwp-muted uppercase">{label}</p>
-  <p class="mt-1 text-sm font-semibold text-white">{value}</p>
+<div class="rounded-xl bg-muted/30 p-4">
+  <p class="mb-1 text-sm text-muted-foreground">{label}</p>
+  <p class="font-medium text-foreground">{value}</p>
 </div>

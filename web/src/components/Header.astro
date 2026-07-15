@@ -13,24 +13,32 @@ const links = [
 ];
 ---
 
-<header class="sticky top-0 z-50 border-b border-white/5 bg-black/80 backdrop-blur-md">
-  <div class="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-4 px-4 lg:px-6">
-    <a href="/" class="group flex shrink-0 items-baseline gap-1.5 font-display text-sm font-bold tracking-tight sm:text-base">
-      <span class="text-white transition group-hover:text-white/90">WeWannaParty</span>
-      <span class="text-wwp-red">X</span>
-      <span class="text-white/90">WeAreAfro</span>
+<header class="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
+  <div class="mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4">
+    <a href="/" class="group flex shrink-0 items-center gap-2">
+      <span
+        class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary font-display text-sm font-extrabold text-primary-foreground"
+        aria-hidden="true"
+      >
+        W
+      </span>
+      <span class="font-display text-sm font-bold tracking-tight sm:text-base">
+        <span class="text-foreground">WeWannaParty</span>
+        <span class="mx-1 text-primary">X</span>
+        <span class="text-foreground/90">WeAreAfro</span>
+      </span>
     </a>
 
-    <nav class="hidden items-center gap-5 xl:flex" aria-label="Primary">
+    <nav class="hidden items-center gap-6 xl:flex" aria-label="Primary">
       {
         links.map((link) => (
           <a
             href={link.href}
             class:list={[
-              "text-[13px] font-medium transition hover:text-white",
+              "text-sm font-medium transition-colors hover:text-foreground",
               pathname === link.href || pathname.startsWith(link.href + "/")
-                ? "text-white"
-                : "text-white/55",
+                ? "text-foreground"
+                : "text-muted-foreground",
             ]}
           >
             {link.label}
@@ -43,7 +51,7 @@ const links = [
       <button
         type="button"
         id="mobile-nav-toggle"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white xl:hidden"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-foreground xl:hidden"
         aria-label="Open menu"
         aria-expanded="false"
         aria-controls="mobile-nav"
@@ -54,18 +62,18 @@ const links = [
       </button>
       <a
         href="/auth"
-        class="rounded-md bg-wwp-red px-3 py-2 text-[11px] font-bold tracking-wide text-white uppercase transition hover:bg-wwp-red-dark sm:px-4 sm:text-xs"
+        class="rounded-lg bg-primary px-4 py-2.5 text-xs font-bold tracking-wide text-primary-foreground uppercase transition hover:bg-primary/90"
       >
         Create Account
       </a>
     </div>
   </div>
 
-  <div id="mobile-nav" class="hidden border-t border-white/5 bg-black px-4 py-3 xl:hidden">
+  <div id="mobile-nav" class="hidden border-t border-border bg-background px-4 py-3 xl:hidden">
     <div class="flex flex-col gap-1">
       {
         links.map((link) => (
-          <a href={link.href} class="rounded-lg px-3 py-2.5 text-sm text-white/80 hover:bg-white/5 hover:text-white">
+          <a href={link.href} class="rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted/40 hover:text-foreground">
             {link.label}
           </a>
         ))

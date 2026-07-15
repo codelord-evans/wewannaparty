@@ -1,43 +1,85 @@
 @import "tailwindcss";
 
+/* WeWannaParty design tokens — matched from weareafro.co.ke :root */
 @theme {
-  --color-wwp-black: #050505;
-  --color-wwp-surface: #121212;
-  --color-wwp-card: #1a1a1a;
-  --color-wwp-border: #2a2a2a;
-  --color-wwp-muted: #9a9a9a;
-  --color-wwp-red: #e31c25;
-  --color-wwp-red-dark: #b00000;
-  --color-wwp-gold: #d4a017;
-  --font-sans: "DM Sans", "Segoe UI", sans-serif;
-  --font-display: "Space Grotesk", "DM Sans", sans-serif;
+  --color-background: hsl(0 0% 3%);
+  --color-foreground: hsl(0 0% 100%);
+  --color-card: hsl(0 0% 6%);
+  --color-card-foreground: hsl(0 0% 100%);
+  --color-primary: hsl(0 100% 35%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-accent: hsl(1 100% 44%);
+  --color-accent-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(0 0% 10%);
+  --color-secondary-foreground: hsl(0 0% 100%);
+  --color-muted: hsl(0 0% 15%);
+  --color-muted-foreground: hsl(0 0% 70%);
+  --color-border: hsl(0 0% 15%);
+  --color-destructive: hsl(0 84% 60%);
+  --color-amber-500: #f59e0b;
+  --radius-wwp: 0.75rem;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", "Inter", sans-serif;
+
+  /* aliases used across secondary pages */
+  --color-wwp-black: hsl(0 0% 3%);
+  --color-wwp-surface: hsl(0 0% 10%);
+  --color-wwp-card: hsl(0 0% 6%);
+  --color-wwp-border: hsl(0 0% 15%);
+  --color-wwp-muted: hsl(0 0% 70%);
+  --color-wwp-red: hsl(0 100% 35%);
+  --color-wwp-red-dark: hsl(0 100% 28%);
+  --color-wwp-gold: #f59e0b;
 }
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-border);
+  }
+
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-wwp-black text-white antialiased;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     font-family: var(--font-sans);
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(227, 28, 37, 0.12), transparent),
-      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(80, 40, 20, 0.08), transparent);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
   }
 
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
   ::selection {
-    background: rgba(227, 28, 37, 0.35);
+    background: color-mix(in srgb, var(--color-primary) 35%, transparent);
   }
 }
 
 @layer utilities {
-  .card-surface {
-    @apply rounded-xl border border-wwp-border bg-wwp-card;
+  .font-display {
+    font-family: var(--font-display);
   }
 
-  .text-balance {
-    text-wrap: balance;
+  .font-body {
+    font-family: var(--font-sans);
+  }
+
+  .card-surface {
+    border-radius: 1rem;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-card);
   }
 }
