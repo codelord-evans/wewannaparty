@@ -1,0 +1,28 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { galleryItems } from "../../../packages/shared/src/data.ts";
+---
+
+<Layout title="Gallery | WeWannaParty" description="Moments from Kenya's biggest parties — captured live.">
+  <div class="mx-auto max-w-[1400px] px-4 py-10 lg:px-6">
+    <h1 class="font-display text-3xl font-bold sm:text-4xl">Gallery</h1>
+    <p class="mt-2 text-sm text-wwp-muted">KOLACOPIA and beyond — the vibe, frozen in frame.</p>
+    <div class="mt-8 columns-1 gap-4 sm:columns-2 lg:columns-3">
+      {
+        galleryItems
+          .filter((item) => item.image_url)
+          .map((item) => (
+            <figure class="mb-4 break-inside-avoid overflow-hidden rounded-xl border border-wwp-border bg-wwp-card">
+              <img src={item.image_url!} alt={item.title} class="w-full object-cover" loading="lazy" />
+              <figcaption class="p-3">
+                <p class="text-sm font-semibold text-white">{item.title}</p>
+                <p class="text-xs text-wwp-muted">
+                  {item.venue} · {item.event_date}
+                </p>
+              </figcaption>
+            </figure>
+          ))
+      }
+    </div>
+  </div>
+</Layout>

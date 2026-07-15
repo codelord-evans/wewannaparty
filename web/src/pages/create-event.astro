@@ -1,0 +1,70 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Create Event | WeWannaParty" description="Submit your event to sell tickets on WeWannaParty.">
+  <div class="mx-auto max-w-2xl px-4 py-12 lg:px-6">
+    <h1 class="font-display text-3xl font-bold">Create Event</h1>
+    <p class="mt-2 text-sm text-wwp-muted">Tell us about your night — we&apos;ll review and get you live.</p>
+
+    <form id="create-event-form" class="card-surface mt-8 space-y-4 p-6">
+      <label class="block">
+        <span class="mb-1.5 block text-xs text-wwp-muted">Event name</span>
+        <input name="name" required class="w-full rounded-lg border border-wwp-border bg-wwp-surface px-3 py-2.5 text-sm outline-none focus:border-wwp-red/60" />
+      </label>
+      <label class="block">
+        <span class="mb-1.5 block text-xs text-wwp-muted">Venue</span>
+        <input name="venue" required class="w-full rounded-lg border border-wwp-border bg-wwp-surface px-3 py-2.5 text-sm outline-none focus:border-wwp-red/60" />
+      </label>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="block">
+          <span class="mb-1.5 block text-xs text-wwp-muted">Date</span>
+          <input name="date" type="date" required class="w-full rounded-lg border border-wwp-border bg-wwp-surface px-3 py-2.5 text-sm outline-none focus:border-wwp-red/60" />
+        </label>
+        <label class="block">
+          <span class="mb-1.5 block text-xs text-wwp-muted">Expected capacity</span>
+          <input name="capacity" type="number" min="1" class="w-full rounded-lg border border-wwp-border bg-wwp-surface px-3 py-2.5 text-sm outline-none focus:border-wwp-red/60" />
+        </label>
+      </div>
+      <label class="block">
+        <span class="mb-1.5 block text-xs text-wwp-muted">Description</span>
+        <textarea name="description" rows="4" required class="w-full rounded-lg border border-wwp-border bg-wwp-surface px-3 py-2.5 text-sm outline-none focus:border-wwp-red/60"></textarea>
+      </label>
+      <label class="block">
+        <span class="mb-1.5 block text-xs text-wwp-muted">Contact email</span>
+        <input name="email" type="email" required class="w-full rounded-lg border border-wwp-border bg-wwp-surface px-3 py-2.5 text-sm outline-none focus:border-wwp-red/60" />
+      </label>
+      <p id="create-event-msg" class="hidden text-sm"></p>
+      <button type="submit" class="w-full rounded-lg bg-wwp-red py-3 text-sm font-bold tracking-wide text-white uppercase hover:bg-wwp-red-dark">
+        Submit for review
+      </button>
+    </form>
+  </div>
+</Layout>
+
+<script>
+  const API = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
+  const form = document.getElementById("create-event-form") as HTMLFormElement;
+  const msg = document.getElementById("create-event-msg")!;
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    msg.classList.remove("hidden", "text-wwp-red", "text-green-400");
+    try {
+      const res = await fetch(`${API}/api/create-event`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed");
+      msg.textContent = json.message;
+      msg.classList.add("text-green-400");
+      form.reset();
+    } catch (err) {
+      msg.textContent = err instanceof Error ? err.message : "Something went wrong";
+      msg.classList.add("text-wwp-red");
+    }
+  });
+</script>

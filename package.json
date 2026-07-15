@@ -1,0 +1,12 @@
+{
+  "name": "wewannaparty",
+  "private": true,
+  "workspaces": ["web", "server", "packages/*"],
+  "scripts": {
+    "dev": "bun run --filter @wwp/server dev & bun run --filter web dev",
+    "dev:web": "bun run --cwd web dev",
+    "dev:api": "bun run --cwd server dev",
+    "build": "bun run --cwd web build",
+    "start:api": "bun run --cwd server start"
+  }
+}

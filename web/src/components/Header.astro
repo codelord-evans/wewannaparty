@@ -1,0 +1,84 @@
+---
+const pathname = Astro.url.pathname;
+
+const links = [
+  { href: "/events", label: "Events" },
+  { href: "/gallery", label: "Gallery" },
+  { href: "/wiki", label: "Wiki" },
+  { href: "/create-event", label: "Create Event" },
+  { href: "/about", label: "About" },
+  { href: "/partner", label: "Partner Us" },
+  { href: "/agent", label: "Agent Portal" },
+  { href: "/support", label: "Support" },
+];
+---
+
+<header class="sticky top-0 z-50 border-b border-white/5 bg-black/80 backdrop-blur-md">
+  <div class="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-4 px-4 lg:px-6">
+    <a href="/" class="group flex shrink-0 items-baseline gap-1.5 font-display text-sm font-bold tracking-tight sm:text-base">
+      <span class="text-white transition group-hover:text-white/90">WeWannaParty</span>
+      <span class="text-wwp-red">X</span>
+      <span class="text-white/90">WeAreAfro</span>
+    </a>
+
+    <nav class="hidden items-center gap-5 xl:flex" aria-label="Primary">
+      {
+        links.map((link) => (
+          <a
+            href={link.href}
+            class:list={[
+              "text-[13px] font-medium transition hover:text-white",
+              pathname === link.href || pathname.startsWith(link.href + "/")
+                ? "text-white"
+                : "text-white/55",
+            ]}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        id="mobile-nav-toggle"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white xl:hidden"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 7h16M4 12h16M4 17h16"></path>
+        </svg>
+      </button>
+      <a
+        href="/auth"
+        class="rounded-md bg-wwp-red px-3 py-2 text-[11px] font-bold tracking-wide text-white uppercase transition hover:bg-wwp-red-dark sm:px-4 sm:text-xs"
+      >
+        Create Account
+      </a>
+    </div>
+  </div>
+
+  <div id="mobile-nav" class="hidden border-t border-white/5 bg-black px-4 py-3 xl:hidden">
+    <div class="flex flex-col gap-1">
+      {
+        links.map((link) => (
+          <a href={link.href} class="rounded-lg px-3 py-2.5 text-sm text-white/80 hover:bg-white/5 hover:text-white">
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById("mobile-nav-toggle");
+  const panel = document.getElementById("mobile-nav");
+  toggle?.addEventListener("click", () => {
+    const open = panel?.classList.toggle("hidden") === false;
+    toggle.setAttribute("aria-expanded", String(open));
+  });
+</script>

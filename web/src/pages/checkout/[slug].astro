@@ -1,0 +1,31 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import CheckoutForm from "../../components/CheckoutForm";
+import { events } from "../../../../packages/shared/src/data.ts";
+
+export function getStaticPaths() {
+  return events.map((event) => ({
+    params: { slug: event.slug },
+    props: { event },
+  }));
+}
+
+const { event } = Astro.props;
+---
+
+<Layout title={`Checkout · ${event.name} | WeWannaParty`} description={`Complete your ticket purchase for ${event.name}`}>
+  <div class="mx-auto max-w-[1100px] px-4 py-8 lg:px-6">
+    <a href={`/event/${event.slug}`} class="text-sm text-wwp-muted hover:text-white">← Back to event</a>
+    <h1 class="mt-4 font-display text-3xl font-bold">Checkout</h1>
+    <p class="mt-2 text-sm text-wwp-muted">Secure your tickets for {event.name}</p>
+    <div class="mt-8">
+      <CheckoutForm
+        client:load
+        eventSlug={event.slug}
+        eventName={event.name}
+        tickets={event.tickets}
+        serviceFee={event.service_fee_kes}
+      />
+    </div>
+  </div>
+</Layout>

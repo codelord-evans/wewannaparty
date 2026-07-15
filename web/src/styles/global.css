@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --color-wwp-black: #050505;
+  --color-wwp-surface: #121212;
+  --color-wwp-card: #1a1a1a;
+  --color-wwp-border: #2a2a2a;
+  --color-wwp-muted: #9a9a9a;
+  --color-wwp-red: #e31c25;
+  --color-wwp-red-dark: #b00000;
+  --color-wwp-gold: #d4a017;
+  --font-sans: "DM Sans", "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "DM Sans", sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-wwp-black text-white antialiased;
+    font-family: var(--font-sans);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(227, 28, 37, 0.12), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(80, 40, 20, 0.08), transparent);
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: rgba(227, 28, 37, 0.35);
+  }
+}
+
+@layer utilities {
+  .card-surface {
+    @apply rounded-xl border border-wwp-border bg-wwp-card;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}

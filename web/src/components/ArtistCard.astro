@@ -1,0 +1,35 @@
+---
+interface Props {
+  name: string;
+  genre: string;
+  photoUrl: string;
+  instagramUrl?: string;
+}
+
+const { name, genre, photoUrl, instagramUrl } = Astro.props;
+---
+
+<a
+  href={instagramUrl || "#"}
+  target={instagramUrl ? "_blank" : undefined}
+  rel={instagramUrl ? "noopener noreferrer" : undefined}
+  class="group block overflow-hidden rounded-xl border border-wwp-border bg-wwp-surface transition hover:border-wwp-red/40"
+>
+  <div class="relative aspect-square overflow-hidden">
+    <img
+      src={photoUrl}
+      alt={name}
+      class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+      loading="lazy"
+    />
+    <span
+      class="absolute top-2 left-2 rounded bg-wwp-red px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase"
+    >
+      Live Band
+    </span>
+  </div>
+  <div class="p-3">
+    <h3 class="font-display text-sm font-semibold text-white">{name}</h3>
+    <p class="mt-0.5 text-xs text-wwp-muted">{genre}</p>
+  </div>
+</a>

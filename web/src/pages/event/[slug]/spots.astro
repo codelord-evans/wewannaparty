@@ -1,0 +1,27 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import SpotsPicker from "../../../components/SpotsPicker";
+import { events } from "../../../../../packages/shared/src/data.ts";
+
+export function getStaticPaths() {
+  return events.map((event) => ({
+    params: { slug: event.slug },
+    props: { event },
+  }));
+}
+
+const { event } = Astro.props;
+---
+
+<Layout title={`Pick your spot · ${event.name} | WeWannaParty`} description={`Choose seats for ${event.name}`}>
+  <div class="mx-auto max-w-[1100px] px-4 py-8 lg:px-6">
+    <a href={`/event/${event.slug}`} class="text-sm text-wwp-muted hover:text-white">← Back to event</a>
+    <h1 class="mt-4 font-display text-3xl font-bold">Pick your spot</h1>
+    <p class="mt-2 text-sm text-wwp-muted">
+      Select your seats for <span class="text-white">{event.name}</span>
+    </p>
+    <div class="mt-8">
+      <SpotsPicker client:load eventSlug={event.slug} />
+    </div>
+  </div>
+</Layout>

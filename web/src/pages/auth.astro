@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AuthForm from "../components/AuthForm";
+---
+
+<Layout title="Create Account | WeWannaParty" description="Create your WeWannaParty account to buy tickets and manage bookings.">
+  <div class="mx-auto max-w-[1400px] px-4 py-12 lg:px-6">
+    <div class="mx-auto max-w-lg text-center">
+      <h1 class="font-display text-3xl font-bold">Join WeWannaParty</h1>
+      <p class="mt-2 text-sm text-wwp-muted">Create an account to checkout faster and access your tickets.</p>
+    </div>
+    <div class="mt-8">
+      <AuthForm client:load />
+    </div>
+  </div>
+</Layout>

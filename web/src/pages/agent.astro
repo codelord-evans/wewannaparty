@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Agent Portal | WeWannaParty" description="Agent and creator login for WeWannaParty ticket sales.">
+  <div class="mx-auto max-w-lg px-4 py-12 lg:px-6">
+    <h1 class="font-display text-3xl font-bold">Agent Portal</h1>
+    <p class="mt-2 text-sm text-wwp-muted">For ticket agents and event creators.</p>
+    <div class="card-surface mt-8 space-y-4 p-6">
+      <p class="text-sm text-white/70">
+        Access sales dashboards, affiliate links, and event management tools. Sign in with your creator credentials.
+      </p>
+      <a href="/auth" class="flex w-full items-center justify-center rounded-lg bg-wwp-red py-3 text-sm font-bold text-white uppercase hover:bg-wwp-red-dark">
+        Sign in
+      </a>
+      <a href="/create-event" class="flex w-full items-center justify-center rounded-lg border border-white/15 py-3 text-sm font-bold text-white uppercase hover:bg-white/5">
+        Apply as creator
+      </a>
+    </div>
+  </div>
+</Layout>

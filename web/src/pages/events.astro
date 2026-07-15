@@ -1,0 +1,30 @@
+---
+import Layout from "../layouts/Layout.astro";
+import EventCard from "../components/EventCard.astro";
+import { featuredEvents } from "../../../packages/shared/src/data.ts";
+---
+
+<Layout title="Events | WeWannaParty" description="Browse upcoming concerts, festivals, and nightlife events across Kenya.">
+  <div class="mx-auto max-w-[1400px] px-4 py-10 lg:px-6">
+    <h1 class="font-display text-3xl font-bold sm:text-4xl">Events</h1>
+    <p class="mt-2 text-sm text-wwp-muted">Find your next night out.</p>
+    <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        featuredEvents.map((event) => (
+          <EventCard
+            id={event.id}
+            name={event.name}
+            slug={event.slug}
+            poster={event.poster}
+            venue={event.venue_name}
+            location={event.location}
+            date={event.date}
+            priceMin={event.price_min}
+            priceMax={event.price_max}
+            badge={event.ticket_badge}
+          />
+        ))
+      }
+    </div>
+  </div>
+</Layout>

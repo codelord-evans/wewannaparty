@@ -1,0 +1,37 @@
+---
+const links = [
+  { href: "/events", label: "Events" },
+  { href: "/gallery", label: "Gallery" },
+  { href: "/create-event", label: "Create Event" },
+  { href: "/about", label: "About" },
+  { href: "/support", label: "Support" },
+  { href: "/terms", label: "Terms" },
+  { href: "/privacy", label: "Privacy" },
+];
+---
+
+<footer class="mt-auto border-t border-wwp-border bg-black">
+  <div class="mx-auto flex max-w-[1400px] flex-col gap-8 px-4 py-10 lg:px-6">
+    <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+      <div>
+        <a href="/" class="font-display text-lg font-bold tracking-tight">
+          WeWanna<span class="text-wwp-red">Party</span>
+        </a>
+        <p class="mt-2 max-w-xs text-sm text-wwp-muted">The ultimate ticketing platform.</p>
+      </div>
+      <nav class="flex flex-wrap gap-x-6 gap-y-2" aria-label="Footer">
+        {
+          links.map((link) => (
+            <a href={link.href} class="text-sm text-white/60 transition hover:text-white">
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+    <p class="text-xs text-white/35">
+      Full Performance Cloud Ltd. Nairobi, The 254. Made in Kenya. © {new Date().getFullYear()} WeWannaParty. All rights
+      reserved.
+    </p>
+  </div>
+</footer>
