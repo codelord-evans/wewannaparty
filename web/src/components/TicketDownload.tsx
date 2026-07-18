@@ -185,8 +185,7 @@ export default function TicketDownload({ eventSlug, eventName }: Props) {
         setData({
           order: {
             id: json.order.id,
-            displayRef:
-              json.order.displayRef ?? String(json.order.id).replace(/^ORD-/, "WWP-"),
+            displayRef: json.order.displayRef ?? String(json.order.id),
             fullName: json.order.fullName,
             email: json.order.email,
             status: json.order.status,

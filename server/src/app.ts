@@ -33,6 +33,7 @@ import {
   listFeaturedEvents,
   listGallery,
   markOrderPaid,
+  orderDisplayRef,
 } from "./services/catalog.ts";
 import { sendOrderTicketsEmail } from "./services/email.ts";
 
@@ -233,13 +234,22 @@ export function createApp(env: Env, db: Db, redis: RedisClient) {
     }
   });
 
-  /** Finalize payment (Paystack webhook / verify will call this; also used in local/dev). */
+  /**
+   * Finalize payment (Paystack webhook / verify; also local/dev).
+   * Idempotent: re-confirming a paid order returns alreadyPaid + email status without re-issuing tickets.
+   */
   app.post("/api/orders/:id/confirm", async (c) => {
     try {
       const orderId = c.req.param("id");
       const result = await markOrderPaid(db, redis, orderId);
       await redis.del(`cache:event:${result.order.eventSlug}`);
-      const email = await sendOrderTicketsEmail(env, db, orderId);
+
+      // Always return explicit email outcome (sent | already_sent | not_configured | …)
+      const email =
+        result.alreadyPaid && result.order.emailSentAt
+          ? ({ sent: false, reason: "already_sent" } as const)
+          : await sendOrderTicketsEmail(env, db, orderId);
+
       return c.json({
         order: result.order,
         tickets: result.tickets.map((t) => ({
@@ -274,7 +284,7 @@ export function createApp(env: Env, db: Db, redis: RedisClient) {
     return c.json({
       order: {
         id: bundle.order.id,
-        displayRef: bundle.order.id.replace(/^ORD-/, "WWP-").replace(/^WWP-WWP-/, "WWP-"),
+        displayRef: orderDisplayRef(bundle.order.id),
         eventSlug: bundle.order.eventSlug,
         email: bundle.order.email,
         fullName: bundle.order.fullName,

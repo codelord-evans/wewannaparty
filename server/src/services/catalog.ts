@@ -187,7 +187,8 @@ export async function createOrder(
     const id = `WWP-${orderId()}`;
     const paystackReference = `wwp_${id.toLowerCase()}_${Date.now()}`;
 
-    const [order] = await db
+    // pending → awaiting_payment once the order row + line items exist
+    const [created] = await db
       .insert(orders)
       .values({
         id,
@@ -198,7 +199,7 @@ export async function createOrder(
         phone: input.phone,
         fullName: input.fullName,
         paymentMethod: input.paymentMethod,
-        status: "awaiting_payment",
+        status: "pending",
         subtotalKes: subtotal,
         serviceFeeKes: serviceFee,
         totalKes: subtotal + serviceFee,
@@ -219,6 +220,12 @@ export async function createOrder(
       })),
     );
 
+    const [order] = await db
+      .update(orders)
+      .set({ status: "awaiting_payment", updatedAt: new Date() })
+      .where(eq(orders.id, created.id))
+      .returning();
+
     return { order, replayed: false as const, event };
   } catch (err) {
     await Promise.all(holdParts.map((h) => releaseHold(redis, h)));
@@ -226,8 +233,13 @@ export async function createOrder(
   }
 }
 
+/** Public order reference shown on tickets / email (IDs are already `WWP-…`). */
+export function orderDisplayRef(orderIdValue: string) {
+  return orderIdValue;
+}
+
 export async function markOrderPaid(db: Db, redis: RedisClient, orderIdValue: string) {
-  return db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const [order] = await tx
       .select()
       .from(orders)
@@ -236,7 +248,7 @@ export async function markOrderPaid(db: Db, redis: RedisClient, orderIdValue: st
     if (!order) throw Object.assign(new Error("Order not found"), { status: 404 });
     if (order.status === "paid") {
       const tickets = await tx.select().from(issuedTickets).where(eq(issuedTickets.orderId, order.id));
-      return { order, tickets, alreadyPaid: true as const };
+      return { order, tickets, alreadyPaid: true as const, holdParts: [] as string[] };
     }
 
     const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, order.id));
@@ -292,12 +304,19 @@ export async function markOrderPaid(db: Db, redis: RedisClient, orderIdValue: st
       }
     }
 
-    for (const h of holdParts) {
-      await releaseHold(redis, h);
-    }
-
-    return { order: paid, tickets: issued, alreadyPaid: false as const };
+    // Release Redis holds only after the DB transaction commits (below)
+    return { order: paid, tickets: issued, alreadyPaid: false as const, holdParts };
   });
+
+  if (result.holdParts.length) {
+    await Promise.all(result.holdParts.map((h) => releaseHold(redis, h)));
+  }
+
+  return {
+    order: result.order,
+    tickets: result.tickets,
+    alreadyPaid: result.alreadyPaid,
+  };
 }
 
 export async function getOrderBundle(db: Db, orderIdValue: string) {

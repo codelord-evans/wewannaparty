@@ -54,15 +54,18 @@ async function seed() {
     .returning();
 
   for (const t of werAfro.tickets) {
+    // Keep DB `available` aligned with API: available && soldCount < capacity
+    const capacity = 500;
+    const soldCount = t.available ? 0 : capacity;
     await db.insert(ticketTypes).values({
       id: t.id,
       eventId: event.id,
       name: t.name,
       description: t.description,
       priceKes: t.price_kes,
-      capacity: t.available ? 500 : 0,
-      soldCount: t.available ? 0 : 500,
-      available: t.available,
+      capacity,
+      soldCount,
+      available: soldCount < capacity,
       highlighted: t.highlighted,
       badge: t.badge ?? null,
     });

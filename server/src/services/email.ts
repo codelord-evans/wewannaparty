@@ -164,7 +164,7 @@ export async function sendOrderTicketsEmail(env: Env, db: Db, orderId: string) {
     return { sent: false as const, reason: "no_tickets" as const };
   }
 
-  const displayRef = bundle.order.id.replace(/^ORD-/, "WWP-");
+  const displayRef = bundle.order.id;
   const ticketUrl = `${env.APP_URL}/success/${bundle.order.eventSlug}?order=${encodeURIComponent(bundle.order.id)}&email=${encodeURIComponent(bundle.order.email)}`;
 
   const html = renderTicketEmailHtml({
