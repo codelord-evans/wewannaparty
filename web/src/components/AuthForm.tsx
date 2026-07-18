@@ -29,7 +29,7 @@ export default function AuthForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Request failed");
-      localStorage.setItem("wwp_token", data.token);
+      localStorage.setItem("wwp_token", data.accessToken ?? data.token);
       localStorage.setItem("wwp_user", JSON.stringify(data.user));
       setSuccess(mode === "register" ? "Account created. Redirecting…" : "Welcome back. Redirecting…");
       setTimeout(() => {

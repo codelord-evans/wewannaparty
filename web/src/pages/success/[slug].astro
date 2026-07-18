@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import TicketDownload from "../../components/TicketDownload";
 import { events } from "../../../../packages/shared/src/data.ts";
 
 export function getStaticPaths() {
@@ -12,35 +13,22 @@ export function getStaticPaths() {
 const { event } = Astro.props;
 ---
 
-<Layout title={`Payment successful · ${event.name} | WeWannaParty`} description="Your ticket purchase was successful.">
-  <div class="mx-auto max-w-lg px-4 py-16 text-center lg:px-6">
-    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/15 text-green-400">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M20 6 9 17l-5-5"></path>
-      </svg>
-    </div>
-    <h1 class="mt-6 font-display text-3xl font-bold">You&apos;re in</h1>
-    <p class="mt-3 text-white/70">
-      Your tickets for <span class="text-white">{event.name}</span> are confirmed.
-    </p>
-    <p id="order-line" class="mt-2 hidden font-mono text-sm text-wwp-red"></p>
-    <p class="mt-2 text-sm text-wwp-muted">A confirmation email will arrive shortly (demo mode).</p>
-    <div class="mt-8 flex flex-wrap justify-center gap-3">
-      <a href={`/event/${event.slug}`} class="rounded-lg border border-white/15 px-5 py-3 text-sm font-bold text-white uppercase hover:bg-white/5">
-        Back to event
-      </a>
-      <a href="/events" class="rounded-lg bg-wwp-red px-5 py-3 text-sm font-bold text-white uppercase hover:bg-wwp-red-dark">
-        More events
-      </a>
-    </div>
-  </div>
+<Layout
+  bare
+  title={`Your ticket · ${event.name} | WeWannaParty`}
+  description={`Electronic ticket for ${event.name}`}
+>
+  <TicketDownload client:load eventSlug={event.slug} eventName={event.name} />
 </Layout>
 
-<script>
-  const order = new URLSearchParams(location.search).get("order");
-  const line = document.getElementById("order-line");
-  if (order && line) {
-    line.textContent = `Order ${order}`;
-    line.classList.remove("hidden");
+<style is:global>
+  @media print {
+    body {
+      background: #000 !important;
+    }
+    header,
+    footer {
+      display: none !important;
+    }
   }
-</script>
+</style>

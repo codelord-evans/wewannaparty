@@ -58,9 +58,17 @@ export default function CheckoutForm({
     setError(null);
     setStatus(null);
     try {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random()}`;
+
       const res = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify({
           eventSlug,
           items: [{ ticketId: ticket.id, quantity: qty }],
@@ -68,14 +76,32 @@ export default function CheckoutForm({
           phone,
           fullName,
           paymentMethod: method,
+          idempotencyKey,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Checkout failed");
 
       setStatus(data.payment.message);
-      await fetch(`${API_URL}/api/orders/${data.order.id}/confirm`, { method: "POST" });
-      window.location.href = `/success/${eventSlug}?order=${data.order.id}`;
+
+      if (data.payment.provider === "paystack") {
+        const init = await fetch(
+          `${API_URL}/api/payments/paystack/initialize/${data.order.id}`,
+          { method: "POST" },
+        );
+        const pay = await init.json();
+        if (!init.ok) throw new Error(pay.error || "Payment init failed");
+        window.location.href = pay.authorizationUrl;
+        return;
+      }
+
+      // Local/dev finalize when Paystack is not configured
+      const confirm = await fetch(`${API_URL}/api/orders/${data.order.id}/confirm`, {
+        method: "POST",
+      });
+      const confirmed = await confirm.json();
+      if (!confirm.ok) throw new Error(confirmed.error || "Could not issue tickets");
+      window.location.href = `/success/${eventSlug}?order=${data.order.id}&email=${encodeURIComponent(email)}`;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

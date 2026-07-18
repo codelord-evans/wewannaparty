@@ -9,6 +9,8 @@ interface Props {
   image?: string;
   canonical?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Hide site chrome for immersive pages (e.g. electronic ticket). */
+  bare?: boolean;
 }
 
 const {
@@ -17,6 +19,7 @@ const {
   image = "https://api.wewannaparty.africa/media/event-posters/WAREAFRO2.jpeg",
   canonical,
   jsonLd,
+  bare = false,
 } = Astro.props;
 
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site ?? "http://localhost:4321").toString();
@@ -63,11 +66,11 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site ?? "htt
       )
     }
   </head>
-  <body class="flex min-h-screen flex-col">
-    <Header />
+  <body class:list={["flex min-h-screen flex-col", bare && "bg-black"]}>
+    {!bare && <Header />}
     <main class="flex-1">
       <slot />
     </main>
-    <Footer />
+    {!bare && <Footer />}
   </body>
 </html>

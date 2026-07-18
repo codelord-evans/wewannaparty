@@ -2,6 +2,9 @@ node_modules/
 dist/
 .astro/
 .env
+server/.env
 *.log
 .DS_Store
 wer-afro-seed.json
+postgres_data/
+redis_data/

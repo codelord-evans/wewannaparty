@@ -2,7 +2,7 @@ import type { Event, EventSummary, GalleryItem } from "./types.ts";
 
 export const werAfro: Event = {
   id: 32,
-  name: 'We"R Afro',
+  name: "We'R Afro",
   slug: "wer-afro",
   description:
     "Join thousands of music lovers for an unforgettable celebration of Afrohouse and 3-Step music at Uhuru Gardens. Featuring some of the biggest artists in the scene, world-class production, immersive experiences, and nonstop energy. One unforgettable night.",
@@ -239,7 +239,7 @@ export const featuredEvents: EventSummary[] = [
   },
   {
     id: 32,
-    name: 'We"R Afro',
+    name: "We'R Afro",
     slug: "wer-afro",
     poster:
       "https://api.wewannaparty.africa/media/event-posters/WAREAFRO2.jpeg",
