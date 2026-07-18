@@ -188,6 +188,24 @@ export const contactMessages = pgTable("contact_messages", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+/** Checkout inventory reservations (replaces Redis holds). */
+export const inventoryHolds = pgTable(
+  "inventory_holds",
+  {
+    id: varchar("id", { length: 128 }).primaryKey(),
+    ticketTypeId: integer("ticket_type_id")
+      .notNull()
+      .references(() => ticketTypes.id, { onDelete: "cascade" }),
+    quantity: integer("quantity").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("inventory_holds_ticket_idx").on(t.ticketTypeId),
+    index("inventory_holds_expires_idx").on(t.expiresAt),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type TicketType = typeof ticketTypes.$inferSelect;

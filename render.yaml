@@ -1,17 +1,7 @@
-# WeWannaParty API on Render
-# Postgres: Supabase (free) — set DATABASE_URL manually
-# Redis: Render Key Value (or Upstash) — linked below or set REDIS_URL manually
-#
-# Dashboard → New → Blueprint → connect this repo
-# Or: New → Web Service (Docker) + New → Key Value
+# WeWannaParty API on Render — Postgres via Supabase only (no Redis)
+# Set DATABASE_URL (+ optional DATABASE_MIGRATE_URL) from Supabase.
 
 services:
-  - type: keyvalue
-    name: wwp-redis
-    plan: starter
-    maxmemoryPolicy: allkeys-lru
-    ipAllowList: [] # private — API on same Render account
-
   - type: web
     name: wwp-api
     runtime: docker
@@ -23,18 +13,10 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      # From Supabase → Project Settings → Database → Connection string
-      # Use "Transaction" pooler URI (port 6543) for the running API
       - key: DATABASE_URL
         sync: false
-      # Optional: Supabase "Session" / direct URI (port 5432) for migrations
       - key: DATABASE_MIGRATE_URL
         sync: false
-      - key: REDIS_URL
-        fromService:
-          name: wwp-redis
-          type: keyvalue
-          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_ACCESS_TTL

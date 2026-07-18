@@ -1,7 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import type { Env } from "../config.ts";
-import type { RedisClient } from "../redis/client.ts";
-import { rateLimit } from "../redis/client.ts";
+import { rateLimit } from "../lib/rate-limit.ts";
 import { verifyAccessToken, type AccessClaims } from "../lib/auth.ts";
 
 export type AppVariables = {
@@ -33,7 +32,7 @@ export function requestId() {
   });
 }
 
-export function redisRateLimit(redis: RedisClient, env: Env) {
+export function apiRateLimit(env: Env) {
   return createMiddleware(async (c, next) => {
     const ip =
       c.req.header("cf-connecting-ip") ??
@@ -45,7 +44,7 @@ export function redisRateLimit(redis: RedisClient, env: Env) {
         ? "orders"
         : "api";
     const max = route === "auth" ? Math.min(20, env.RATE_LIMIT_MAX) : env.RATE_LIMIT_MAX;
-    const result = await rateLimit(redis, `${route}:${ip}`, env.RATE_LIMIT_WINDOW_MS, max);
+    const result = rateLimit(`${route}:${ip}`, env.RATE_LIMIT_WINDOW_MS, max);
     c.header("X-RateLimit-Remaining", String(result.remaining));
     c.header("X-RateLimit-Reset", String(Math.ceil(result.resetMs / 1000)));
     if (!result.allowed) {

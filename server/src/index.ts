@@ -1,16 +1,13 @@
 import { loadEnv } from "./config.ts";
 import { createDb } from "./db/client.ts";
-import { createRedis } from "./redis/client.ts";
 import { createApp } from "./app.ts";
 
 const env = loadEnv();
 const { db, client } = createDb(env);
-const redis = createRedis(env);
-const app = createApp(env, db, redis);
+const app = createApp(env, db);
 
 const shutdown = async () => {
   console.log("Shutting down…");
-  await redis.quit();
   await client.end({ timeout: 5 });
   process.exit(0);
 };

@@ -3,7 +3,6 @@ import { cors } from "hono/cors";
 import { eq, sql } from "drizzle-orm";
 import type { Env } from "./config.ts";
 import type { Db } from "./db/client.ts";
-import type { RedisClient } from "./redis/client.ts";
 import { contactMessages, issuedTickets, orders, users } from "./db/schema.ts";
 import {
   hashPassword,
@@ -19,8 +18,8 @@ import {
   registerSchema,
 } from "./lib/validation.ts";
 import {
+  apiRateLimit,
   optionalAuth,
-  redisRateLimit,
   requestId,
   securityHeaders,
   type AppVariables,
@@ -37,7 +36,7 @@ import {
 } from "./services/catalog.ts";
 import { sendOrderTicketsEmail } from "./services/email.ts";
 
-export function createApp(env: Env, db: Db, redis: RedisClient) {
+export function createApp(env: Env, db: Db) {
   const app = new Hono<{ Variables: AppVariables & { env: Env } }>();
 
   app.use("*", async (c, next) => {
@@ -57,31 +56,24 @@ export function createApp(env: Env, db: Db, redis: RedisClient) {
       credentials: true,
     }),
   );
-  app.use("/api/*", redisRateLimit(redis, env));
+  app.use("/api/*", apiRateLimit(env));
   app.use("/api/*", optionalAuth(env));
 
   app.get("/api/health", async (c) => {
     let postgresOk = false;
-    let redisOk = false;
     try {
       await db.execute(sql`select 1`);
       postgresOk = true;
     } catch {
       postgresOk = false;
     }
-    try {
-      redisOk = (await redis.ping()) === "PONG";
-    } catch {
-      redisOk = false;
-    }
-    const ok = postgresOk && redisOk;
     return c.json(
       {
-        ok,
+        ok: postgresOk,
         runtime: "bun",
-        checks: { postgres: postgresOk, redis: redisOk },
+        checks: { postgres: postgresOk },
       },
-      ok ? 200 : 503,
+      postgresOk ? 200 : 503,
     );
   });
 
@@ -98,16 +90,8 @@ export function createApp(env: Env, db: Db, redis: RedisClient) {
   });
 
   app.get("/api/events/:slug", async (c) => {
-    const cacheKey = `cache:event:${c.req.param("slug")}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      c.header("X-Cache", "HIT");
-      return c.json(JSON.parse(cached));
-    }
     const event = await getEventBySlug(db, c.req.param("slug"));
     if (!event) return c.json({ error: "Event not found" }, 404);
-    await redis.set(cacheKey, JSON.stringify(event), "EX", 30);
-    c.header("X-Cache", "MISS");
     return c.json(event);
   });
 
@@ -186,7 +170,7 @@ export function createApp(env: Env, db: Db, redis: RedisClient) {
       parsed.data.idempotencyKey ?? c.req.header("idempotency-key") ?? undefined;
 
     try {
-      const result = await createOrder(db, redis, env, {
+      const result = await createOrder(db, env, {
         ...parsed.data,
         idempotencyKey,
         userId: c.get("user")?.sub,
@@ -241,8 +225,7 @@ export function createApp(env: Env, db: Db, redis: RedisClient) {
   app.post("/api/orders/:id/confirm", async (c) => {
     try {
       const orderId = c.req.param("id");
-      const result = await markOrderPaid(db, redis, orderId);
-      await redis.del(`cache:event:${result.order.eventSlug}`);
+      const result = await markOrderPaid(db, orderId);
 
       // Always return explicit email outcome (sent | already_sent | not_configured | …)
       const email =
@@ -407,8 +390,7 @@ export function createApp(env: Env, db: Db, redis: RedisClient) {
         .where(eq(orders.paystackReference, event.data.reference))
         .limit(1);
       if (order) {
-        await markOrderPaid(db, redis, order.id);
-        await redis.del(`cache:event:${order.eventSlug}`);
+        await markOrderPaid(db, order.id);
         await sendOrderTicketsEmail(env, db, order.id);
       }
     }

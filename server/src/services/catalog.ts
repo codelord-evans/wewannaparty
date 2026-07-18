@@ -1,18 +1,18 @@
 import { customAlphabet } from "nanoid";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import {
   artists,
   events,
   galleryItems,
+  inventoryHolds,
   issuedTickets,
   orderItems,
   orders,
   ticketTypes,
 } from "../db/schema.ts";
 import type { Env } from "../config.ts";
-import type { RedisClient } from "../redis/client.ts";
-import { releaseHold, reserveInventory } from "../redis/client.ts";
+import { releaseHolds, reserveInventory } from "./inventory.ts";
 
 const orderId = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 8);
 const ticketCode = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 10);
@@ -120,12 +120,7 @@ type CreateOrderInput = {
   userId?: string;
 };
 
-export async function createOrder(
-  db: Db,
-  redis: RedisClient,
-  env: Env,
-  input: CreateOrderInput,
-) {
+export async function createOrder(db: Db, env: Env, input: CreateOrderInput) {
   if (input.idempotencyKey) {
     const [existing] = await db
       .select()
@@ -158,7 +153,7 @@ export async function createOrder(
       }
       const partId = `${holdToken}:${ticket.id}`;
       const reserved = await reserveInventory(
-        redis,
+        db,
         ticket.id,
         item.quantity,
         ticket.capacity,
@@ -228,7 +223,7 @@ export async function createOrder(
 
     return { order, replayed: false as const, event };
   } catch (err) {
-    await Promise.all(holdParts.map((h) => releaseHold(redis, h)));
+    await releaseHolds(db, holdParts);
     throw err;
   }
 }
@@ -238,8 +233,8 @@ export function orderDisplayRef(orderIdValue: string) {
   return orderIdValue;
 }
 
-export async function markOrderPaid(db: Db, redis: RedisClient, orderIdValue: string) {
-  const result = await db.transaction(async (tx) => {
+export async function markOrderPaid(db: Db, orderIdValue: string) {
+  return db.transaction(async (tx) => {
     const [order] = await tx
       .select()
       .from(orders)
@@ -248,7 +243,7 @@ export async function markOrderPaid(db: Db, redis: RedisClient, orderIdValue: st
     if (!order) throw Object.assign(new Error("Order not found"), { status: 404 });
     if (order.status === "paid") {
       const tickets = await tx.select().from(issuedTickets).where(eq(issuedTickets.orderId, order.id));
-      return { order, tickets, alreadyPaid: true as const, holdParts: [] as string[] };
+      return { order, tickets, alreadyPaid: true as const };
     }
 
     const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, order.id));
@@ -304,19 +299,12 @@ export async function markOrderPaid(db: Db, redis: RedisClient, orderIdValue: st
       }
     }
 
-    // Release Redis holds only after the DB transaction commits (below)
-    return { order: paid, tickets: issued, alreadyPaid: false as const, holdParts };
+    if (holdParts.length) {
+      await tx.delete(inventoryHolds).where(inArray(inventoryHolds.id, holdParts));
+    }
+
+    return { order: paid, tickets: issued, alreadyPaid: false as const };
   });
-
-  if (result.holdParts.length) {
-    await Promise.all(result.holdParts.map((h) => releaseHold(redis, h)));
-  }
-
-  return {
-    order: result.order,
-    tickets: result.tickets,
-    alreadyPaid: result.alreadyPaid,
-  };
 }
 
 export async function getOrderBundle(db: Db, orderIdValue: string) {
