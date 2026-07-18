@@ -1,36 +1,35 @@
-# WeWannaParty API — Render Blueprint
-# Dashboard → New → Blueprint → connect this GitHub repo
-# After create, set APP_URL, CORS_ORIGINS, RESEND_API_KEY, EMAIL_FROM (and Paystack if live).
-
-databases:
-  - name: wwp-postgres
-    plan: free
-    postgresMajorVersion: "16"
-    databaseName: wewannaparty
-    user: wwp
+# WeWannaParty API on Render
+# Postgres: Supabase (free) — set DATABASE_URL manually
+# Redis: Render Key Value (or Upstash) — linked below or set REDIS_URL manually
+#
+# Dashboard → New → Blueprint → connect this repo
+# Or: New → Web Service (Docker) + New → Key Value
 
 services:
   - type: keyvalue
     name: wwp-redis
     plan: starter
     maxmemoryPolicy: allkeys-lru
-    ipAllowList: [] # private network only (API on same Render account)
+    ipAllowList: [] # private — API on same Render account
 
   - type: web
     name: wwp-api
     runtime: docker
     plan: starter
-    region: oregon
+    region: frankfurt
     dockerfilePath: ./server/Dockerfile
     dockerContext: .
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      # From Supabase → Project Settings → Database → Connection string
+      # Use "Transaction" pooler URI (port 6543) for the running API
       - key: DATABASE_URL
-        fromDatabase:
-          name: wwp-postgres
-          property: connectionString
+        sync: false
+      # Optional: Supabase "Session" / direct URI (port 5432) for migrations
+      - key: DATABASE_MIGRATE_URL
+        sync: false
       - key: REDIS_URL
         fromService:
           name: wwp-redis
@@ -48,12 +47,10 @@ services:
         value: "120"
       - key: INVENTORY_HOLD_TTL_SEC
         value: "600"
-      # Frontend origin(s), e.g. https://your-frontend.vercel.app,http://localhost:4321
       - key: APP_URL
         sync: false
       - key: CORS_ORIGINS
         sync: false
-      # Resend: https://resend.com/api-keys — verify a domain for production From:
       - key: RESEND_API_KEY
         sync: false
       - key: EMAIL_FROM

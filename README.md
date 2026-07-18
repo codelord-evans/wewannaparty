@@ -69,19 +69,50 @@ Without `PAYSTACK_SECRET_KEY`, checkout uses local confirm (still issues real DB
 
 When `RESEND_API_KEY` is set, confirming an order also emails the buyer a branded ticket (QR + codes + link back to `/success`). Emails are sent once per order (`orders.email_sent_at`).
 
-## Deploy on Render
+## Deploy (Supabase Postgres + Render API/Redis)
+
+Recommended cost-friendly setup:
+
+| Piece | Where | Notes |
+|-------|--------|--------|
+| Postgres | [Supabase](https://supabase.com) free project | Durable orders/tickets |
+| Redis | Render Key Value **or** [Upstash](https://upstash.com) free | Holds, rate limits, cache |
+| API | Render Docker web service | `server/Dockerfile` |
+
+### 1. Supabase
+
+1. Create a project → **Project Settings → Database**.
+2. Copy **Transaction** pooler URI (port **6543**) → use as `DATABASE_URL` on Render.
+3. Copy **Session** / direct URI (port **5432**) → optional `DATABASE_MIGRATE_URL` (safer for migrations).
+4. Password is the one you set when creating the project.
+
+### 2. Redis
+
+- **Render:** New → Key Value → copy connection string → `REDIS_URL`, **or**
+- **Upstash:** create Redis → copy `rediss://…` URL → `REDIS_URL` (works the same).
+
+### 3. Render web service
 
 1. Push this repo to GitHub.
-2. [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint** → select the repo (`render.yaml`).
-3. Blueprint creates **Postgres**, **Key Value (Redis)**, and the **wwp-api** Docker web service.
-4. When prompted, set:
-   - `APP_URL` — your frontend URL (e.g. `https://your-site.com`)
-   - `CORS_ORIGINS` — comma-separated origins allowed to call the API
-   - `RESEND_API_KEY` — from [resend.com](https://resend.com)
-   - `EMAIL_FROM` — verified sender, e.g. `WeWannaParty <tickets@yourdomain.com>` (use `WeWannaParty <onboarding@resend.dev>` only for Resend test sends to your own account email)
-   - Optional Paystack keys for live payments
-5. After deploy, health check: `https://<your-api>.onrender.com/api/health`
-6. Point the frontend `PUBLIC_API_URL` at that API URL.
+2. New → Web Service → Docker, Dockerfile `./server/Dockerfile`, root directory **empty**.
+3. Set environment variables:
+
+| Key | Value |
+|-----|--------|
+| `DATABASE_URL` | Supabase transaction pooler URI |
+| `DATABASE_MIGRATE_URL` | Supabase session/direct URI (recommended) |
+| `REDIS_URL` | Render Key Value or Upstash URL |
+| `JWT_SECRET` | long random (32+ chars) |
+| `NODE_ENV` | `production` |
+| `APP_URL` | your frontend URL |
+| `CORS_ORIGINS` | frontend origin(s), comma-separated |
+| `RESEND_API_KEY` / `EMAIL_FROM` | optional ticket email |
+| Paystack keys | optional |
+
+4. Health check path: `/api/health`
+5. After deploy: `https://<your-api>.onrender.com/api/health`
+
+Or use Blueprint (`render.yaml`) for API + Redis, then paste Supabase URLs when prompted.
 
 The Docker entrypoint runs migrations + seed on boot. `API_PUBLIC_URL` defaults from Render’s `RENDER_EXTERNAL_URL`.
 
@@ -89,7 +120,6 @@ The Docker entrypoint runs migrations + seed on boot. `API_PUBLIC_URL` defaults 
 
 See [server/.env.example](server/.env.example). Required in production:
 
-- `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET` (long random)
+- `DATABASE_URL` (Supabase), `REDIS_URL`, `JWT_SECRET` (long random)
 - `CORS_ORIGINS`, `APP_URL` (`API_PUBLIC_URL` optional on Render)
-- Optional: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`
-- Optional: `RESEND_API_KEY`, `EMAIL_FROM` (ticket emails)
+- Optional: `DATABASE_MIGRATE_URL`, Paystack keys, `RESEND_API_KEY`, `EMAIL_FROM`

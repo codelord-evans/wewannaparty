@@ -4,6 +4,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(8787),
   DATABASE_URL: z.string().min(1),
+  /** Optional Supabase direct/session URI for migrations (port 5432) */
+  DATABASE_MIGRATE_URL: z.string().optional().default(""),
   REDIS_URL: z.string().min(1),
   JWT_SECRET: z.string().min(32),
   JWT_ACCESS_TTL: z.string().default("15m"),
